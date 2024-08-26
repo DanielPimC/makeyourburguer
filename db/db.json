@@ -79,25 +79,12 @@
   ],
   "burgers": [
     {
-      "id": "2d80",
-      "nome": "aaa",
+      "id": "4c7f",
+      "nome": "aaaaa",
       "pao": "3 Queijos",
       "carne": "Maminha",
       "opcionais": [
-        "Bacon",
-        "Cheddar"
-      ],
-      "status": "Solicitado"
-    },
-    {
-      "id": "1845",
-      "nome": "aaaa",
-      "pao": "Integral",
-      "carne": "Alcatra",
-      "opcionais": [
-        "Bacon",
-        "Cheddar",
-        "Salame"
+        "Bacon"
       ],
       "status": "Solicitado"
     }

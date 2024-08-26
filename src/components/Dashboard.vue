@@ -30,9 +30,11 @@
                         <option v-for="stats in status" :key="stats.id" :selected="burguer.status == stats.tipo"
                             :value="stats.tipo">{{ stats.tipo }}</option>
                     </select>
-                    <button class="delete-btn" @click="deletarPedido(burguer.id)">Cancelar pedido</button>
+                    <button class="delete-btn" @click="abrirModal(burguer.id)">Cancelar pedido</button>
                 </div>
             </div>
+            <Modal class="modal-container" :open="aberto" @close="aberto = !aberto" texto="Deseja deletar o pedido?"
+                :id_burguer="burguer_id" @executarFuncao=deletarPedido(burguer_id) opcaofail="não" opcaosuccess="sim" />
         </div>
     </div>
 </template>
@@ -41,7 +43,7 @@
 import axios from 'axios'
 import Message from './Message.vue'
 import Modal from './Modal.vue'
-import { ref } from 'vue'
+
 export default {
     name: 'Dashboard',
     data() {
@@ -50,7 +52,9 @@ export default {
             burguer_id: null,
             status: [],
             msg: '',
-            showModal: false
+            showModal: false,
+            texto: '',
+            aberto: false
         }
     },
     components: {
@@ -59,53 +63,61 @@ export default {
     },
     methods: {
         async getPedidos() {
-            const res = await axios.get('http://localhost:3000/burgers');
-            console.log(res.data)
-            this.burguers = res.data
-            this.getStatus()
+            try {
+                const res = await axios.get('http://localhost:3000/burgers');
+                console.log(res.data)
+                this.burguers = res.data
+                this.getStatus()
+            } catch (error) {
+                console.error(error)
+            }
         },
         async getStatus() {
-            const res = await axios.get('http://localhost:3000/status')
-            console.log(res.data)
-            this.status = res.data
+            try {
+                const res = await axios.get('http://localhost:3000/status')
+                console.log(res.data)
+                this.status = res.data
+            } catch (error) {
+                console.error(error)
+            }
         },
         async deletarPedido(id) {
-            const res = await axios.delete(`http://localhost:3000/burgers/${id}`)
-            console.log(res.data)
-            this.getPedidos()
-            this.msg = `Pedido N'º ${id} deletado com sucesso!`
-            setTimeout(() => {
-                 this.msg = ''
-            }, 5000);
+            try {
+                const res = await axios.delete(`http://localhost:3000/burgers/${id}`)
+                console.log(res.data)
+                this.getPedidos()
+                this.msg = `Pedido Nº ${id} deletado com sucesso!`
+                setTimeout(() => {
+                    this.msg = ''
+                }, 2000);
+                this.aberto = false
+            } catch (error) {
+                console.error(error)
+            }
         },
         async updateBurguer(event, id) {
-            const option = event.target.value;
-            const dataJson = JSON.stringify({ status: option });
-            const req = await axios.patch(`http://localhost:3000/burgers/${id}`, dataJson);
-            const res = req.data
-            console.log(res)
-            this.msg = `Pedido N'º ${res.id} atualizado para ${res.status} com sucesso!`
-            setTimeout(() => {
-                 this.msg = ''
-            }, 5000);
+            try {
+                const option = event.target.value;
+                const dataJson = JSON.stringify({ status: option });
+                const req = await axios.patch(`http://localhost:3000/burgers/${id}`, dataJson);
+                const res = req.data
+                console.log(res)
+                this.msg = `Pedido Nº ${res.id} atualizado para '${res.status}' com sucesso!`
+                setTimeout(() => {
+                    this.msg = ''
+                }, 5000);
+            } catch (error) {
+                console.error(error)
+            }
+        },
+        abrirModal(id) {
+            this.aberto = true
+            this.burguer_id = id
         }
     },
     mounted() {
         this.getPedidos()
     },
-    setup() {
-        const isOpen = ref(false)
-
-        const openModal = () => {
-            isOpen.value = true
-
-            return isOpen.value
-        }
-
-        return {
-            isOpen, openModal
-        }
-    }
 }
 </script>
 
@@ -128,7 +140,7 @@ export default {
 
 .burguer-table-heading div,
 .burguer-table-row div {
-    @apply w-[19%]
+    width: 19%;
 }
 
 .burguer-table-row {
@@ -142,13 +154,15 @@ export default {
 }
 
 select {
-    @apply py-[12px] px-[6px] mr-12
+    border: 1px solid #333;
+    @apply py-[12px] px-[6px] mr-12 rounded-md
 }
 
 .delete-btn {
     border: 2px solid #222;
     font-size: 16px;
     margin: 0 auto;
+    margin-top: 5px;
     transition: 0.5s;
     @apply bg-[#222] text-[#FCBA03] font-bold p-[10px] cursor-pointer rounded-md
 }

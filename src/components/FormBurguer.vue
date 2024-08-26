@@ -1,39 +1,41 @@
 <template>
     <div>
         <div>
-            <form id="burguerform" @submit.prevent="createBurguer"> 
+            <form id="burguerform" @submit.prevent="abrirModal">
                 <h1 class="monte-burguer">MONTE SEU BURGUER:</h1>
                 <Message :msg="msg" v-show="msg" />
                 <div class="input-container">
                     <label for="nome">Nome do cliente: </label>
-                    <input type="text" name="nome" placeholder="Nome" v-model="nome">
+                    <input type="text" name="nome" placeholder="Nome" v-model="nome" required>
                 </div>
                 <div class="input-container">
                     <label for="pao">Escolha o seu pão: </label>
-                    <select name="pao" id="pao" v-model="pao">
+                    <select name="pao" id="pao" v-model="pao" required>
                         <option value="">Selecione o pão</option>
                         <option v-for="pao in paes" :key="pao.id" :value="pao.tipo">{{ pao.tipo }}</option>
                     </select>
                 </div>
                 <div class="input-container">
                     <label for="carne">Escolha a carne: </label>
-                    <select name="carne" id="carne" v-model="carne">
+                    <select name="carne" id="carne" v-model="carne" required>
                         <option value="">Selecione a carne</option>
                         <option v-for="carne in carnes" :key="carne.id" :value="carne.tipo">{{ carne.tipo }}</option>
                     </select>
                 </div>
                 <div id="opcionais-container" class="input-container">
                     <label for="opcionais" class="opcionais-title">Escolha os opcionais: </label>
-                    <div class="checkbox-container" v-for="opcional in opcionaisdata" :key="opcional.id" >
+                    <div class="checkbox-container" v-for="opcional in opcionaisdata" :key="opcional.id">
                         <input type="checkbox" name="opcionais" v-model="opcionais" :value="opcional.tipo">
                         <span>{{ opcional.tipo }}</span>
-                        
+
                     </div>
                 </div>
                 <div class="input-container">
                     <input type="submit" class="submit-btn" value="Confirmar pedido">
                 </div>
             </form>
+            <Modal class="modal-container" :open="aberto" @close="aberto = !aberto" texto="Confirmar o pedido?"
+                @executarFuncao=createBurguer opcaofail="não" opcaosuccess="sim" rota="/pedidos" />
         </div>
     </div>
 </template>
@@ -41,11 +43,13 @@
 <script>
 import axios from 'axios'
 import Message from './Message.vue'
+import Modal from './Modal.vue'
 
 export default {
     name: 'FormBurguer',
     components: {
-        Message
+        Message,
+        Modal
     },
     data() {
         return {
@@ -56,7 +60,8 @@ export default {
             pao: null,
             carne: null,
             opcionais: [],
-            msg: null
+            msg: null,
+            aberto: false
         }
     },
     methods: {
@@ -66,7 +71,7 @@ export default {
                 this.paes = req.data.paes
                 this.carnes = req.data.carnes
                 this.opcionaisdata = req.data.opcionais
-            }catch(error){
+            } catch (error) {
                 console.error(error)
             }
         },
@@ -83,14 +88,17 @@ export default {
             const res = req.data
             console.log(res)
             this.nome = ""
-            this.paes = ""
-            this.carnes = ""
-            this.opcionais = ""
+            this.pao = ""
+            this.carne = ""
+            this.opcionais = []
             this.msg = `Pedido Nº ${res.id} feito com sucesso!`
-            
             setTimeout(() => {
-                 this.msg = ''
+                this.msg = ''
             }, 5000);
+            this.aberto = false
+        },
+        abrirModal(id) {
+            this.aberto = true
         }
     },
     mounted() {
@@ -100,67 +108,67 @@ export default {
 </script>
 
 <style scoped>
+.monte-burguer {
+    @apply text-[30px] mb-10 font-bold
+}
 
-    .monte-burguer {
-        @apply text-[30px] mb-10 font-bold
-    }
-    #burger-form {
-        max-width: 400px;
-        margin: 0 auto;
-    }
+#burger-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
 
-    .input-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+.input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-    label{
-        border-left: 4px solid #FCBA03;
-        @apply font-bold mb-[15px] text-[#222] px-[5px] py-[10px]
-    }
+label {
+    border-left: 4px solid #FCBA03;
+    @apply font-bold mb-[15px] text-[#222] px-[5px] py-[10px]
+}
 
-    input, select {
-        align-items: center;
-        text-align: center;
-        border: 1px solid black;
-        @apply px-[5px] py-[10px] w-[300px]
-    }
+input, select {
+    align-items: center;
+    text-align: center;
+    border: 1px solid black;
+    @apply px-[5px] py-[10px] w-[300px]
+}
 
-    #opcionais-container {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        flex-direction: column;
-        margin-bottom: 20px;
-    }
+#opcionais-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
 
-    .opcionais-title {
-        @apply w-[100px]
-    }
+.opcionais-title {
+    @apply w-[100px]
+}
 
-    .checkbox-container {
-        @apply flex text-start w-[50%] mb-[20px]
-    }
+.checkbox-container {
+    @apply flex text-start w-[50%] mb-[20px]
+}
 
-    .checkbox-container span,
-    .checkbox-container input {
-        @apply w-auto
-    }
+.checkbox-container span,
+.checkbox-container input {
+    @apply w-auto
+}
 
-    .checkbox-container span {
-        @apply ml-[6px] font-bold
-    }
+.checkbox-container span {
+    @apply ml-[6px] font-bold
+}
 
-    .submit-btn {
-        border: 2px solid #222;
-        font-size: 16px;
-        margin: 0 auto;
-        @apply bg-[#222] text-[#FCBA03] font-bold p-[10px] cursor-pointer rounded-lg duration-500
-    }
+.submit-btn {
+    border: 2px solid #222;
+    font-size: 16px;
+    margin: 0 auto;
+    @apply bg-[#222] text-[#FCBA03] font-bold p-[10px] cursor-pointer rounded-lg duration-500
+}
 
-    .submit-btn:hover {
-        @apply bg-transparent text-[#222]
-    }
+.submit-btn:hover {
+    @apply bg-transparent text-[#222]
+}
 </style>
